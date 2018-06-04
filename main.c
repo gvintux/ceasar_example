@@ -91,8 +91,11 @@ static void read_string(parameters params, string *msg)
         } else exit_with_error(E_MSG_OPEN_SRC_FILE);
     } else fgets(&m[0], STR_LEN, stdin);
     size_t msg_len = strlen(&m[0]);
-    m[msg_len - 1] = '\0';
-    msg_len--;
+	if (m[msg_len - 1] == '\n') 
+	{ 
+		m[msg_len - 1] = '\0';
+	    msg_len--;
+	}
     size_t i;
     for (i = 0; i < msg_len; ++i) m[i] = tolower(m[i]);
     strcpy(msg[0], &m[0]);
@@ -119,9 +122,16 @@ static void process_string(parameters params, string msg)
     size_t i;
     for (i = 0; i < msg_len; i++)
     {
-        size_t j;
-        for (j = 0; j < abc_len; ++j) if (abc[j] == msg[i]) break;
-        result_msg[i] = abc[(j + params.n * d) % abc_len];
+        if(!ispunct(msg[i]) || !isspace(msg[i]))
+		{
+            size_t j;
+            for (j = 0; j < abc_len; ++j) if (abc[j] == msg[i]) break;
+			if (j == abc_len) continue;
+            int sub_index = j + params.n * d;
+            while(sub_index < 0) sub_index += abc_len;
+			while(sub_index >= abc_len) sub_index %= abc_len;
+			result_msg[i] = abc[sub_index];
+		}
     }
     if (params.out)
     {
